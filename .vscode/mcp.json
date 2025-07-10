@@ -2,9 +2,9 @@
   "servers": {
     "askseer-mcp": {
       "type": "stdio",
-      "command": "/Users/andywarr/.nvm/versions/node/v22.17.0/bin/node",
-      "args": ["./node_modules/.bin/tsx", "/Users/andywarr/Documents/code/askseer-mcp/mcp_server.ts"],
-      "cwd": "/Users/andywarr/Documents/code/askseer-mcp"
+      "command": "npm",
+      "args": ["start"],
+      "cwd": "~/Documents/code/askseer-mcp"
     }
   }
 }

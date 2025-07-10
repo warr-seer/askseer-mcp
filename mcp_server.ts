@@ -2,6 +2,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import puppeteer from "puppeteer";
 import { z } from "zod";
 
 // Create an MCP server
@@ -16,27 +17,41 @@ mcpServer.registerTool(
   {
     description: "Evaluate a UI using an LLM",
     inputSchema: {
-      image: z.string().describe("Base64 encoded image of the UI"),
+      url: z.string().url(),
     },
-    outputSchema: {
-      results: z.array(
-        z.object({
-          heuristic: z.string(),
-          violated: z.boolean(),
-          reason: z.string(),
-          recommendation: z.string().optional(),
-        })
-      ),
-    },
+    // outputSchema: {
+    //   results: z.array(
+    //     z.object({
+    //       heuristic: z.string(),
+    //       violated: z.boolean(),
+    //       reason: z.string(),
+    //       recommendation: z.string().optional(),
+    //     })
+    //   ),
+    // },
   },
-  async ({ image }) => {
-    const response = await mcpServer.server.createMessage({
-      messages: [
-        {
-          role: "user",
-          content: {
-            type: "text",
-            text: `You are a user experience researcher. You have been tasked with evaluating a user interface (UI) against established a set of heuristics. Your objective is to identify any heuristic that are violated and provide actionable, user-centered recommendations for improvement.
+  async ({ url }) => {
+    try {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+
+      await page.goto(url, {
+        waitUntil: "networkidle2",
+        timeout: 30000,
+      });
+
+      const screenshotBuffer = await page.screenshot({ fullPage: true });
+      const screenshotBase64 = (screenshotBuffer as Buffer).toString("base64");
+
+      await browser.close();
+
+      const response = await mcpServer.server.createMessage({
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `You are a user experience researcher. You have been tasked with evaluating a user interface (UI) against established heuristics. Your objective is to identify any heuristic that are violated and provide actionable, user-centered recommendations for improvement.
 
             # Heuristics
             1. **Visibility of system status**: The system should always keep users informed about what is going on, through appropriate feedback within a reasonable time.
@@ -50,33 +65,46 @@ mcpServer.registerTool(
             9. **Help users recognize, diagnose, and recover from errors**: Error messages should be expressed in plain language (no codes), precisely indicate the problem, and constructively suggest a solution.
             10. **Help and documentation**: Even though it is better if the system can be used without documentation, it may be necessary to provide help and documentation. Any such information should be easy to search, focused on the user's task, list concrete steps to be carried out, and not be too large.
 
-Please analyze the provided UI image and provide your evaluation.`,
-          },
-        },
-        {
-          role: "user",
-          content: {
-            type: "image",
-            data: image,
-            mimeType: "image/png",
-          },
-        },
-      ],
-      maxTokens: 1000,
-    });
+Please analyze the provided UI image and return your evaluation as a JSON array. Each element should be an object with the following structure:
+{
+  "heuristic": "name of the heuristic",
+  "violated": true/false,
+  "reason": "explanation of why this heuristic is or isn't violated",
+  "recommendation": "actionable recommendation for improvement (optional, only if violated is true)"
+}
 
-    // @ts-ignore
-    const parsedResponse = JSON.parse(response.choices[0].message.content);
+Return only the JSON array, no additional text or formatting.`,
+            },
+          },
+          {
+            role: "user",
+            content: {
+              type: "image",
+              data: screenshotBase64,
+              mimeType: "image/png",
+            },
+          },
+        ],
+        maxTokens: 1000,
+      });
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(parsedResponse, null, 2),
-        },
-      ],
-      parsedResponse,
-    };
+      console.log("LLM response:", JSON.stringify(response.content, null, 2));
+
+      return {
+        content: [
+          {
+            type: "text",
+            text:
+              response.content.type === "text"
+                ? response.content.text
+                : `Unable to evaluate ${url}`,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error loading page:", error);
+      throw new Error(`Failed to evaluate: ${url}`);
+    }
   }
 );
 
