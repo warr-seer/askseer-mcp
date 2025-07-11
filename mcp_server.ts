@@ -11,7 +11,7 @@ const mcpServer = new McpServer({
   version: "1.0.0",
 });
 
-// Tool that uses LLM to evaluate a UI
+// Tool that uses LLM to evaluate a UI based on a set of heuristics
 mcpServer.registerTool(
   "evaluate",
   {
