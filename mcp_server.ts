@@ -15,7 +15,9 @@ const mcpServer = new McpServer({
 mcpServer.registerTool(
   "evaluate",
   {
-    description: "Evaluate a UI using an LLM",
+    title: "Heuristic Evaluation",
+    description:
+      "A tool that uses LLM to evaluate a UI based on a set of heuristics",
     inputSchema: {
       url: z.string().url(),
     },
