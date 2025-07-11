@@ -3,8 +3,7 @@
     "askseer-mcp": {
       "type": "stdio",
       "command": "npm",
-      "args": ["start"],
-      "cwd": "~/Documents/code/askseer-mcp"
+      "args": ["start"]
     }
   }
 }
