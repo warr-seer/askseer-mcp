@@ -64,5 +64,5 @@ npx tsx mcp_server.ts
 
 ## Requirements
 
-- Node.js (v16 or higher)
+- Node.js (v18 or higher)
 - npm or yarn
