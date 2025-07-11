@@ -7,7 +7,7 @@ A Model Context Protocol (MCP) server that provides UI evaluation capabilities u
 1. **Clone the repository**
 
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/warr-seer/askseer-mcp.git
    cd askseer-mcp
    ```
 
@@ -26,10 +26,7 @@ A Model Context Protocol (MCP) server that provides UI evaluation capabilities u
      "servers": {
        "askseer-mcp": {
          "command": "npx",
-         "args": [
-           "tsx",
-           "/Users/andywarr/Documents/code/askseer-mcp/mcp_server.ts"
-         ],
+         "args": ["tsx", "~/code/askseer-mcp/mcp_server.ts"],
          "env": {
            "NODE_ENV": "development"
          }
