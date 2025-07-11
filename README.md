@@ -25,20 +25,18 @@ A Model Context Protocol (MCP) server that provides UI evaluation capabilities u
    {
      "servers": {
        "askseer-mcp": {
-         "type": "stdio",
-         "command": "npm",
-         "args": ["start"],
-         "cwd": "/path/to/your/askseer-mcp"
+         "command": "npx",
+         "args": [
+           "tsx",
+           "/Users/andywarr/Documents/code/askseer-mcp/mcp_server.ts"
+         ],
+         "env": {
+           "NODE_ENV": "development"
+         }
        }
      }
    }
    ```
-
-   **Important**: Update the `cwd` path to point to your actual project directory.
-
-## Alternative Setup Methods
-
-### Using npx directly
 
 ```json
 {
